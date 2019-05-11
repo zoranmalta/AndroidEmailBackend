@@ -1,6 +1,7 @@
 package com.example.AndroidEmailBackend.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,16 @@ public class AccountService implements IAccountService {
 	public void saveAll(List<Account> list) {
 	    accountRepository.saveAll(list);
 		
+	}
+
+	@Override
+	public Account save(Account account) {
+		return accountRepository.save(account);
+	}
+
+	@Override
+	public Optional<Account> getAccountById(Long id) {
+		return accountRepository.findById(id);
 	}
 	
 	

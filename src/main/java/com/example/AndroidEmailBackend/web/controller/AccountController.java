@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.AndroidEmailBackend.model.Account;
 import com.example.AndroidEmailBackend.service.impl.AccountService;
+import com.example.AndroidEmailBackend.web.dto.AccountDTO;
 
 @RestController
 @RequestMapping(value = "/api")
@@ -23,33 +24,37 @@ public class AccountController {
 	AccountService accountService;
 
 	@GetMapping(value = "/account/{username}/{password}")
-	public ResponseEntity<Account> getAccount(@PathVariable("username") String username,
+	public ResponseEntity<AccountDTO> getAccount(@PathVariable("username") String username,
 			@PathVariable("password") String password) {
 		System.out.println(username);
 		Account account = accountService.getAccountByUsername(username);
 		if (account != null && account.getPassword().equals(password)) {
 			System.out.println(account);
-			return new ResponseEntity<Account>(account, HttpStatus.OK);
+			return new ResponseEntity<AccountDTO>(new AccountDTO(account), HttpStatus.OK);
 		} else {
-			System.out.println(account);
-			account = null;
-			return new ResponseEntity<Account>(account, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<AccountDTO>( HttpStatus.NOT_FOUND);
 		}
 	}
 
 	@PutMapping(value = "/account/update")
-	public ResponseEntity<Account> updateAccount(@RequestBody Account account) {
+	public ResponseEntity<AccountDTO> updateAccount(@RequestBody AccountDTO account) {
 		List<Account> list = accountService.findAllAccounts();
 		if (list != null) {
 			for (Account a : list) {
 				if (a.getId() == account.getId()) {
 					a.setPassword(account.getPassword());
 					a.setUsername(account.getUsername());
-					accountService.saveAll(list);
-					return new ResponseEntity<Account>(account, HttpStatus.OK);
+					try {
+						a=accountService.save(a);
+					} catch (Exception e) {
+						
+						e.printStackTrace();
+						return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+					}
+					return new ResponseEntity<AccountDTO>(new AccountDTO(a), HttpStatus.OK);
 				}
 			}
 		}
-		return new ResponseEntity<Account>(HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<AccountDTO>(HttpStatus.BAD_REQUEST);
 	}
 }

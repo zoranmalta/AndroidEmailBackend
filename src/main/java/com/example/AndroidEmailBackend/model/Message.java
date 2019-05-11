@@ -1,5 +1,6 @@
 package com.example.AndroidEmailBackend.model;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -25,15 +26,18 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name="message")
 @EntityListeners(AuditingEntityListener.class)
-public class Message {
+public class Message implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@GeneratedValue(strategy=GenerationType.IDENTITY)//nastavlja da formira primary key na vec ucitanu tabelu
 	@Column(name="message_id")//dajem ime koloni koja ce biti strani kljuc u medjutabeli message_tag
 	private Long id;
 	
@@ -43,11 +47,9 @@ public class Message {
 	private String sendcc;
 	
 	private String sendbc;
-	@ManyToOne
-	//@JsonIgnore//ne stavlja u json listu postova koja bi kasnije referencirale ne user i tako u krug 
-    @JsonBackReference
+	
+	@ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
     @JoinColumn(name = "account_id",nullable=false)//pravi kolonu account_id od account.getIds ne sme biti null
-	@OnDelete( action=OnDeleteAction.CASCADE) //pri brisanju usera brisu se i njegovi messages
 	private Account account;
 	
 	@Column(name="message_date" , nullable=false, columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
@@ -56,12 +58,14 @@ public class Message {
 	@CreatedDate
 	private Date date;
 	
-	@OneToMany(mappedBy="message" ,cascade=CascadeType.ALL)//pri briasanju message brisu se i sve njegove attachments
+	@OneToMany(mappedBy="message" ,fetch = FetchType.LAZY,cascade=CascadeType.ALL)//pri briasanju message brisu se i sve njegove attachments
 	@JsonManagedReference // stavlja u json listu postova koja bi kasnije referencirale ne attachment i tako u krug
 	private List<Attachment> attachments;
 	
-	@OneToMany(mappedBy = "message", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
+	@OneToMany(mappedBy = "message", cascade = CascadeType.REFRESH)
+	@JsonManagedReference
 	private List<Message_Tag> message_tags;
+	
 	
 	@Column(name="subject" , nullable=false)
 	private String subject;
@@ -71,9 +75,8 @@ public class Message {
 	
 	public Message() {}
 
-	public Message(Long id, String sendto, String sendcc, String sendbc,
-			com.example.AndroidEmailBackend.model.Account account, Date date,
-			List<com.example.AndroidEmailBackend.model.Attachment> attachments, String subject, String content) {
+	public Message(Long id, String sendto, String sendcc, String sendbc,Account account, Date date,
+			List<Attachment> attachments,List<Message_Tag> message_tags, String subject, String content) {
 		super();
 		this.id = id;
 		this.sendto = sendto;
@@ -84,6 +87,7 @@ public class Message {
 		this.attachments = attachments;
 		this.subject = subject;
 		this.content = content;
+		this.message_tags=message_tags;
 	}
 
 	public Long getId() {
@@ -166,12 +170,6 @@ public class Message {
 		this.message_tags = message_tags;
 	}
 
-	@Override
-	public String toString() {
-		return "Message [id=" + id + ", sendto=" + sendto + ", sendcc=" + sendcc + ", sendbc=" + sendbc + ", account="
-				+ account + ", date=" + date + ", attachments=" + attachments + ", message_tags=" + message_tags
-				+ ", subject=" + subject + ", content=" + content + "]";
-	}
-	
+
 	
 }

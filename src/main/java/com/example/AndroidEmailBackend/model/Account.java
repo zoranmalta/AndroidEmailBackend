@@ -1,11 +1,13 @@
 package com.example.AndroidEmailBackend.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -14,13 +16,19 @@ import javax.persistence.Table;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 @Entity
 @Table(name="account")
 @EntityListeners(AuditingEntityListener.class)
-public class Account {
+public class Account implements Serializable{
+
+	private static final long serialVersionUID = 1L;
 
 	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="account_id", unique=true,nullable=false)
 	private Long id;
 	
@@ -36,8 +44,7 @@ public class Account {
 	@Column(name="password" ,nullable=false)
 	private String password;
 	
-	@OneToMany(mappedBy="account" ,cascade=CascadeType.ALL)//pri briasanju accounta brisu se i sve njegove poruke
-	//@JsonBackReference // ne stavlja u json listu postova koja bi kasnije referencirale ne user i tako u krug
+	@OneToMany(mappedBy="account" ,fetch = FetchType.LAZY,cascade=CascadeType.ALL)
 	private List<Message> messages;
 	
 	public Account() {}

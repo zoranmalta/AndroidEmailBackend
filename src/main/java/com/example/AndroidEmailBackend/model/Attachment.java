@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 public class Attachment {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "attachment_id")
 	private Long id;
 

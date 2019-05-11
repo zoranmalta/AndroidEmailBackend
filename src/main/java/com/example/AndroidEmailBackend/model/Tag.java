@@ -9,24 +9,28 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import org.hibernate.validator.constraints.NotBlank;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 
 @Entity
 @Table(name="tag")
 public class Tag {
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="tag_id")
 	private Long id;
 	
 	@Column(nullable=false)
 	private String name;
 	
-	@OneToMany(mappedBy = "tag", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
+	@OneToMany(mappedBy = "tag", cascade = CascadeType.REFRESH)
+	@JsonBackReference
 	private List<Message_Tag> message_tags;
 
 	public Tag(){}
@@ -66,7 +70,5 @@ public class Tag {
 	public String toString() {
 		return "Tag [id=" + id + ", name=" + name + ", message_tags=" + message_tags + "]";
 	}
-	
-	
 
 }
