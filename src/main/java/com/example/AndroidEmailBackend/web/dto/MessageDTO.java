@@ -1,6 +1,7 @@
 package com.example.AndroidEmailBackend.web.dto;
 
 import java.util.Date;
+import java.util.List;
 
 import com.example.AndroidEmailBackend.model.Message;
 
@@ -14,6 +15,7 @@ public class MessageDTO {
 	private String content;
 	private Date date;
 	private AccountDTO accountDto;
+	private List<AttachmentDTO> attachments;
 	
 	public MessageDTO() {}
 
@@ -92,5 +94,14 @@ public class MessageDTO {
 	public void setAccountDto(AccountDTO accountDto) {
 		this.accountDto = accountDto;
 	}
+
+	public List<AttachmentDTO> getAttachments() {
+		return attachments;
+	}
+
+	public void setAttachments(List<AttachmentDTO> attachments) {
+		this.attachments = attachments;
+	}
+	
 
 }

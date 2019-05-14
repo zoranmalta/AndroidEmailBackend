@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,9 +17,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.AndroidEmailBackend.model.Account;
+import com.example.AndroidEmailBackend.model.Attachment;
 import com.example.AndroidEmailBackend.model.Message;
 import com.example.AndroidEmailBackend.service.impl.AccountService;
+import com.example.AndroidEmailBackend.service.impl.AttachmentService;
 import com.example.AndroidEmailBackend.service.impl.MessageService;
+import com.example.AndroidEmailBackend.web.dto.AttachmentDTO;
 import com.example.AndroidEmailBackend.web.dto.MessageDTO;
 
 @RestController
@@ -29,19 +34,25 @@ public class MessageController {
 
 	@Autowired
 	AccountService accountService;
+	
+	@Autowired
+	AttachmentService attachmentService;
 
 	@GetMapping(value = "/inboxmessages/{username}")
-	public ResponseEntity<List<MessageDTO>> getInboxMessages(@PathVariable("username") String username) {
+	public ResponseEntity<List<MessageDTO>> getInboxMessages(@PathVariable("username") String username,Pageable pageable) {
 
+		
 		List<Message> messages = new ArrayList<>();
 		List<MessageDTO> messagesDto=new ArrayList<>();
+		Page<Message> messagesPage;
 		try {
 			messages = messageService.getInboxMessages(username);
+			messagesPage=messageService.findBySendto(username, pageable);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<List<MessageDTO>>( HttpStatus.BAD_REQUEST);
 		}
-		for(Message m :messages) {
+		for(Message m :messagesPage) {
 			MessageDTO mdto=new MessageDTO(m);
 			messagesDto.add(mdto);
 		}
@@ -78,9 +89,18 @@ public class MessageController {
 	public ResponseEntity<MessageDTO> getOneMessageById(@PathVariable("id") Long id){
 	
 			Message message;
+			List<Attachment> attachments;
 			try {
 				message = messageService.getMessageById(id);
 				MessageDTO mdto=new MessageDTO(message);
+				attachments=attachmentService.getAttachmentsForMessage(id);
+				List<AttachmentDTO> attachmentDTOs=new ArrayList<>();
+				for(Attachment a:attachments) {
+					AttachmentDTO adto=new AttachmentDTO(a);
+					attachmentDTOs.add(adto);
+				}
+				mdto.setAttachments(attachmentDTOs);
+				
 				return new ResponseEntity<MessageDTO>(mdto,HttpStatus.OK);
 			} catch (Exception e) {
 				

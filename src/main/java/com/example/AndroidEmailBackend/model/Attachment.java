@@ -2,9 +2,11 @@ package com.example.AndroidEmailBackend.model;
 
 import java.util.Base64;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -37,13 +39,15 @@ public class Attachment {
 
 	private String name;
 
-	@ManyToOne
 	// @JsonIgnore//ne stavlja u json listu postova koja bi kasnije referencirale ne
 	// user i tako u krug
-	@JsonBackReference // stavlja povratnu vrednost attachmenta u messages
+	//@JsonBackReference // stavlja povratnu vrednost attachmenta u messages
+	//@OnDelete(action = OnDeleteAction.CASCADE) // pri brisanju message brisu se i njegovi attachmentsi
+	@ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
 	@JoinColumn(name = "message_id", nullable = false) // pravi kolonu message_id od message.getIds ne sme biti null
-	@OnDelete(action = OnDeleteAction.CASCADE) // pri brisanju message brisu se i njegovi attachmentsi
 	private Message message;
+	
+	public Attachment() {}
 
 	public Attachment(Long id, Base64 data, String type, String name,
 			Message message) {
